@@ -31,6 +31,7 @@ function FlightSearch() {
   const [destination, setDestination] = useState("");
   const [date, setDate] = useState("");
   const [page, setPage] = useState(0);
+  const [returnDate, setReturnDate] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searched, setSearched] = useState(false);
 
@@ -38,8 +39,16 @@ function FlightSearch() {
 
   const handleSearch = () => {
     if (!isFormValid) return;
-    dispatch(setSearchParams({ sourceCity: source, destinationCity: destination, journeyDate: date }));
-    const results = flightsData.filter((f) => f.source === source && f.destination === destination);
+    dispatch(
+      setSearchParams({
+        sourceCity: source,
+        destinationCity: destination,
+        journeyDate: date,
+      }),
+    );
+    const results = flightsData.filter(
+      (f) => f.source === source && f.destination === destination,
+    );
     dispatch(setSearchResults(results));
     setSearched(true);
     setPage(0);
@@ -50,32 +59,61 @@ function FlightSearch() {
     navigate("/flight-booking");
   };
 
-  const paginated = searchResults.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const paginated = searchResults.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage,
+  );
 
   return (
     <Box p={3} maxWidth={480}>
-      <RadioGroup row value={tripType} onChange={(e) => dispatch(setTripType(e.target.value))}>
-        <FormControlLabel value="oneway" control={<Radio color="primary" />} label="One Way" />
-        <FormControlLabel value="roundtrip" control={<Radio color="primary" />} label="Round Trip" />
+      <RadioGroup
+        row
+        value={tripType}
+        onChange={(e) => dispatch(setTripType(e.target.value))}
+      >
+        <FormControlLabel
+          value="oneway"
+          control={<Radio color="primary" />}
+          label="One Way"
+        />
+        <FormControlLabel
+          value="roundtrip"
+          control={<Radio color="primary" />}
+          label="Round Trip"
+        />
       </RadioGroup>
 
       <Autocomplete
         openOnFocus
+        disablePortal
         options={cityList}
         value={source || null}
         onChange={(e, newValue) => setSource(newValue || "")}
         renderInput={(params) => (
-          <TextField {...params} label="Source City" variant="outlined" fullWidth margin="normal" />
+          <TextField
+            {...params}
+            label="Source City"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+          />
         )}
       />
 
       <Autocomplete
         openOnFocus
+        disablePortal
         options={cityList}
         value={destination || null}
         onChange={(e, newValue) => setDestination(newValue || "")}
         renderInput={(params) => (
-          <TextField {...params} label="Destination City" variant="outlined" fullWidth margin="normal" />
+          <TextField
+            {...params}
+            label="Destination City"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+          />
         )}
       />
 
@@ -91,15 +129,34 @@ function FlightSearch() {
         onChange={(e) => setDate(e.target.value)}
       />
 
+      {tripType === "roundtrip" && (
+        <TextField
+          label="Return Date"
+          type="date"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          InputLabelProps={{ shrink: true }}
+          value={returnDate}
+          onChange={(e) => setReturnDate(e.target.value)}
+        />
+      )}
+
       <Box mt={2}>
-        <Button variant="contained" color="primary" fullWidth disabled={!isFormValid} onClick={handleSearch}>
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          disabled={!isFormValid}
+          onClick={handleSearch}
+        >
           Search Flight
         </Button>
       </Box>
 
       {searched && searchResults.length === 0 && (
         <Box mt={4}>
-          <Typography>No flights available</Typography>
+          <Typography>No Records Found..</Typography>
         </Box>
       )}
 
@@ -108,7 +165,13 @@ function FlightSearch() {
           {paginated.map((flight) => (
             <Paper
               key={flight.id}
-              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: 16, marginBottom: 12 }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: 16,
+                marginBottom: 12,
+              }}
             >
               <Avatar>{flight.airline[0]}</Avatar>
               <Box textAlign="center">
@@ -124,7 +187,12 @@ function FlightSearch() {
                 <div>{flight.destination}</div>
                 <div>{flight.stops}</div>
               </Box>
-              <Button className="book-flight" variant="contained" color="primary" onClick={() => handleBook(flight)}>
+              <Button
+                className="book-flight"
+                variant="contained"
+                color="primary"
+                onClick={() => handleBook(flight)}
+              >
                 Rs. {flight.price.toLocaleString()}
               </Button>
             </Paper>
