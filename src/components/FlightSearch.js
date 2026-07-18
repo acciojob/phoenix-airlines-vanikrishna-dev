@@ -32,7 +32,7 @@ function CityAutocomplete({ label, value, onSelect }) {
   }, [value]);
 
   const filtered = cityList.filter((city) =>
-    city.toLowerCase().includes(inputValue.toLowerCase())
+    city.toLowerCase().includes(inputValue.toLowerCase()),
   );
 
   const handleSelect = (city) => {
@@ -51,11 +51,24 @@ function CityAutocomplete({ label, value, onSelect }) {
         value={inputValue}
         onFocus={() => setOpen(true)}
         onChange={(e) => {
-          setInputValue(e.target.value);
-          onSelect("");
+          const typed = e.target.value;
+          setInputValue(typed);
           setOpen(true);
+
+          const exactMatch = cityList.find(
+            (city) => city.toLowerCase() === typed.toLowerCase(),
+          );
+          onSelect(exactMatch || "");
         }}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        onBlur={() => {
+          setTimeout(() => {
+            setOpen(false);
+            const exactMatch = cityList.find(
+              (city) => city.toLowerCase() === inputValue.toLowerCase(),
+            );
+            if (exactMatch) onSelect(exactMatch);
+          }, 150);
+        }}
       />
       {open && (
         <ul
@@ -115,8 +128,16 @@ function FlightSearch() {
 
   const handleSearch = () => {
     if (!isFormValid) return;
-    dispatch(setSearchParams({ sourceCity: source, destinationCity: destination, journeyDate: date }));
-    const results = flightsData.filter((f) => f.source === source && f.destination === destination);
+    dispatch(
+      setSearchParams({
+        sourceCity: source,
+        destinationCity: destination,
+        journeyDate: date,
+      }),
+    );
+    const results = flightsData.filter(
+      (f) => f.source === source && f.destination === destination,
+    );
     dispatch(setSearchResults(results));
     setSearched(true);
     setPage(0);
@@ -127,17 +148,40 @@ function FlightSearch() {
     navigate("/flight-booking");
   };
 
-  const paginated = searchResults.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const paginated = searchResults.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage,
+  );
 
   return (
     <Box p={3} maxWidth={480}>
-      <RadioGroup row value={tripType} onChange={(e) => dispatch(setTripType(e.target.value))}>
-        <FormControlLabel value="oneway" control={<Radio color="primary" />} label="One Way" />
-        <FormControlLabel value="roundtrip" control={<Radio color="primary" />} label="Round Trip" />
+      <RadioGroup
+        row
+        value={tripType}
+        onChange={(e) => dispatch(setTripType(e.target.value))}
+      >
+        <FormControlLabel
+          value="oneway"
+          control={<Radio color="primary" />}
+          label="One Way"
+        />
+        <FormControlLabel
+          value="roundtrip"
+          control={<Radio color="primary" />}
+          label="Round Trip"
+        />
       </RadioGroup>
 
-      <CityAutocomplete label="Source City" value={source} onSelect={setSource} />
-      <CityAutocomplete label="Destination City" value={destination} onSelect={setDestination} />
+      <CityAutocomplete
+        label="Source City"
+        value={source}
+        onSelect={setSource}
+      />
+      <CityAutocomplete
+        label="Destination City"
+        value={destination}
+        onSelect={setDestination}
+      />
 
       <TextField
         label="Journey Date"
@@ -164,7 +208,13 @@ function FlightSearch() {
       )}
 
       <Box mt={2}>
-        <Button variant="contained" color="primary" fullWidth disabled={!isFormValid} onClick={handleSearch}>
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          disabled={!isFormValid}
+          onClick={handleSearch}
+        >
           Search Flight
         </Button>
       </Box>
@@ -180,7 +230,13 @@ function FlightSearch() {
           {paginated.map((flight) => (
             <Paper
               key={flight.id}
-              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: 16, marginBottom: 12 }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: 16,
+                marginBottom: 12,
+              }}
             >
               <Avatar>{flight.airline[0]}</Avatar>
               <Box textAlign="center">
@@ -196,7 +252,12 @@ function FlightSearch() {
                 <div>{flight.destination}</div>
                 <div>{flight.stops}</div>
               </Box>
-              <Button className="book_flight" variant="contained" color="primary" onClick={() => handleBook(flight)}>
+              <Button
+                className="book_flight"
+                variant="contained"
+                color="primary"
+                onClick={() => handleBook(flight)}
+              >
                 Rs. {flight.price.toLocaleString()}
               </Button>
             </Paper>
