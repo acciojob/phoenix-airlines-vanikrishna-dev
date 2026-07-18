@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@material-ui/core": "^4.12.4",
     "@reduxjs/toolkit": "^1.9.7",
     "css-loader": "^4.3.0",
     "cypress": "^9.5.0",
