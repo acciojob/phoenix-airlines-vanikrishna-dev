@@ -6,11 +6,12 @@ import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import TextField from "@material-ui/core/TextField";
-import MenuItem from "@material-ui/core/MenuItem";
 import Button from "@material-ui/core/Button";
 import Avatar from "@material-ui/core/Avatar";
 import Paper from "@material-ui/core/Paper";
 import TablePagination from "@material-ui/core/TablePagination";
+import Typography from "@material-ui/core/Typography";
+import Autocomplete from "@material-ui/lab/Autocomplete";
 
 import { cityList } from "../data/flights";
 import flightsData from "../data/flights";
@@ -31,6 +32,7 @@ function FlightSearch() {
   const [date, setDate] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [searched, setSearched] = useState(false);
 
   const isFormValid = source && destination && date && source !== destination;
 
@@ -38,7 +40,8 @@ function FlightSearch() {
     if (!isFormValid) return;
     dispatch(setSearchParams({ sourceCity: source, destinationCity: destination, journeyDate: date }));
     const results = flightsData.filter((f) => f.source === source && f.destination === destination);
-    dispatch(setSearchResults(results.length ? results : flightsData));
+    dispatch(setSearchResults(results));
+    setSearched(true);
     setPage(0);
   };
 
@@ -56,37 +59,28 @@ function FlightSearch() {
         <FormControlLabel value="roundtrip" control={<Radio color="primary" />} label="Round Trip" />
       </RadioGroup>
 
-      <TextField
-        select
-        label="Source City"
-        variant="outlined"
-        fullWidth
-        margin="normal"
-        value={source}
-        onChange={(e) => setSource(e.target.value)}
-      >
-        {cityList.map((city) => (
-          <MenuItem key={city} value={city}>{city}</MenuItem>
-        ))}
-      </TextField>
+      <Autocomplete
+        options={cityList}
+        value={source || null}
+        onChange={(e, newValue) => setSource(newValue || "")}
+        renderInput={(params) => (
+          <TextField {...params} label="Source City" variant="outlined" fullWidth margin="normal" />
+        )}
+      />
 
-      <TextField
-        select
-        label="Destination City"
-        variant="outlined"
-        fullWidth
-        margin="normal"
-        value={destination}
-        onChange={(e) => setDestination(e.target.value)}
-      >
-        {cityList.map((city) => (
-          <MenuItem key={city} value={city}>{city}</MenuItem>
-        ))}
-      </TextField>
+      <Autocomplete
+        options={cityList}
+        value={destination || null}
+        onChange={(e, newValue) => setDestination(newValue || "")}
+        renderInput={(params) => (
+          <TextField {...params} label="Destination City" variant="outlined" fullWidth margin="normal" />
+        )}
+      />
 
       <TextField
         label="Journey Date"
-        type="date"
+        type="text"
+        placeholder="dd/mm/yyyy"
         variant="outlined"
         fullWidth
         margin="normal"
@@ -100,6 +94,12 @@ function FlightSearch() {
           Search Flight
         </Button>
       </Box>
+
+      {searched && searchResults.length === 0 && (
+        <Box mt={4}>
+          <Typography>No flights available</Typography>
+        </Box>
+      )}
 
       {searchResults.length > 0 && (
         <Box mt={4}>
