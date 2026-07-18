@@ -60,6 +60,7 @@ function FlightSearch() {
       </RadioGroup>
 
       <Autocomplete
+        openOnFocus
         options={cityList}
         value={source || null}
         onChange={(e, newValue) => setSource(newValue || "")}
@@ -69,6 +70,7 @@ function FlightSearch() {
       />
 
       <Autocomplete
+        openOnFocus
         options={cityList}
         value={destination || null}
         onChange={(e, newValue) => setDestination(newValue || "")}
@@ -79,7 +81,7 @@ function FlightSearch() {
 
       <TextField
         label="Journey Date"
-        type="text"
+        type="date"
         placeholder="dd/mm/yyyy"
         variant="outlined"
         fullWidth
