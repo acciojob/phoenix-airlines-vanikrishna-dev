@@ -1,4 +1,4 @@
-const cityList = ["Mumbai", "Bengaluru", "Delhi", "Chennai", "Kolkata", "Hyderabad"];
+const cityList = ["Mumbai", "Bengaluru", "New Delhi", "Chennai", "Kolkata", "Hyderabad"];
 
 const flights = [
   {
@@ -27,7 +27,7 @@ const flights = [
     id: "6E-201",
     airline: "IndiGo",
     flightNumber: "6E-201",
-    source: "Delhi",
+    source: "New Delhi",
     destination: "Chennai",
     departureTime: "09:15",
     arrivalTime: "11:45",
