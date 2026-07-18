@@ -196,7 +196,7 @@ function FlightSearch() {
                 <div>{flight.destination}</div>
                 <div>{flight.stops}</div>
               </Box>
-              <Button className="book-flight" variant="contained" color="primary" onClick={() => handleBook(flight)}>
+              <Button className="book_flight" variant="contained" color="primary" onClick={() => handleBook(flight)}>
                 Rs. {flight.price.toLocaleString()}
               </Button>
             </Paper>
