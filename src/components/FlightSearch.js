@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Box from "@material-ui/core/Box";
@@ -8,7 +8,6 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import Avatar from "@material-ui/core/Avatar";
-import Paper from "@material-ui/core/Paper";
 import TablePagination from "@material-ui/core/TablePagination";
 import Typography from "@material-ui/core/Typography";
 
@@ -20,91 +19,6 @@ import {
   setSearchResults,
   selectFlight,
 } from "../redux/bookingSlice";
-
-// Simple, portal-free dropdown so Cypress can always find real <li> elements.
-function CityAutocomplete({ label, value, onSelect }) {
-  const [inputValue, setInputValue] = useState(value || "");
-  const [open, setOpen] = useState(false);
-  const wrapperRef = useRef(null);
-
-  useEffect(() => {
-    setInputValue(value || "");
-  }, [value]);
-
-  const filtered = cityList.filter((city) =>
-    city.toLowerCase().includes(inputValue.toLowerCase()),
-  );
-
-  const handleSelect = (city) => {
-    onSelect(city);
-    setInputValue(city);
-    setOpen(false);
-  };
-
-  return (
-    <Box position="relative" ref={wrapperRef}>
-      <TextField
-        label={label}
-        variant="outlined"
-        fullWidth
-        margin="normal"
-        value={inputValue}
-        onFocus={() => setOpen(true)}
-        onChange={(e) => {
-          const typed = e.target.value;
-          setInputValue(typed);
-          setOpen(true);
-
-          const exactMatch = cityList.find(
-            (city) => city.toLowerCase() === typed.toLowerCase(),
-          );
-          onSelect(exactMatch || "");
-        }}
-        onBlur={() => {
-          setTimeout(() => {
-            setOpen(false);
-            const exactMatch = cityList.find(
-              (city) => city.toLowerCase() === inputValue.toLowerCase(),
-            );
-            if (exactMatch) onSelect(exactMatch);
-          }, 150);
-        }}
-      />
-      {open && (
-        <ul
-          style={{
-            listStyle: "none",
-            margin: 0,
-            padding: "4px 0",
-            position: "absolute",
-            top: "100%",
-            left: 0,
-            right: 0,
-            background: "#fff",
-            border: "1px solid #ccc",
-            zIndex: 10,
-            maxHeight: 200,
-            overflowY: "auto",
-          }}
-        >
-          {filtered.length === 0 ? (
-            <li style={{ padding: "8px 16px", color: "#888" }}>No options</li>
-          ) : (
-            filtered.map((city) => (
-              <li
-                key={city}
-                onMouseDown={() => handleSelect(city)}
-                style={{ padding: "8px 16px", cursor: "pointer" }}
-              >
-                {city}
-              </li>
-            ))
-          )}
-        </ul>
-      )}
-    </Box>
-  );
-}
 
 function FlightSearch() {
   const dispatch = useDispatch();
@@ -119,7 +33,12 @@ function FlightSearch() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searched, setSearched] = useState(false);
 
-  const isFormValid = source && destination && source !== destination;
+  const isFormValid =
+    source &&
+    destination &&
+    date &&
+    source.trim().toLowerCase() !== destination.trim().toLowerCase() &&
+    (tripType !== "roundtrip" || returnDate);
 
   const handleSearch = () => {
     if (!isFormValid) return;
@@ -130,8 +49,11 @@ function FlightSearch() {
         journeyDate: date,
       }),
     );
+
     const results = flightsData.filter(
-      (f) => f.source === source && f.destination === destination,
+      (f) =>
+        f.source.trim().toLowerCase() === source.trim().toLowerCase() &&
+        f.destination.trim().toLowerCase() === destination.trim().toLowerCase(),
     );
     dispatch(setSearchResults(results));
     setSearched(true);
@@ -167,16 +89,37 @@ function FlightSearch() {
         />
       </RadioGroup>
 
-      <CityAutocomplete
+      <TextField
         label="Source City"
+        type="text"
+        variant="outlined"
+        fullWidth
+        margin="normal"
         value={source}
-        onSelect={setSource}
+        onChange={(e) => setSource(e.target.value)}
+        inputProps={{ list: "source-cities" }}
       />
-      <CityAutocomplete
+      <datalist id="source-cities">
+        {cityList.map((city) => (
+          <option key={city} value={city} />
+        ))}
+      </datalist>
+
+      <TextField
         label="Destination City"
+        type="text"
+        variant="outlined"
+        fullWidth
+        margin="normal"
         value={destination}
-        onSelect={setDestination}
+        onChange={(e) => setDestination(e.target.value)}
+        inputProps={{ list: "destination-cities" }}
       />
+      <datalist id="destination-cities">
+        {cityList.map((city) => (
+          <option key={city} value={city} />
+        ))}
+      </datalist>
 
       <TextField
         label="Journey Date"
@@ -222,41 +165,45 @@ function FlightSearch() {
 
       {searchResults.length > 0 && (
         <Box mt={4}>
-          {paginated.map((flight) => (
-            <Paper
-              key={flight.id}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: 16,
-                marginBottom: 12,
-              }}
-            >
-              <Avatar>{flight.airline[0]}</Avatar>
-              <Box textAlign="center">
-                <div>{flight.departureTime}</div>
-                <div>{flight.source}</div>
-              </Box>
-              <Box textAlign="center">
-                <div>{flight.airline}</div>
-                <div>{flight.flightNumber}</div>
-              </Box>
-              <Box textAlign="center">
-                <div>{flight.arrivalTime}</div>
-                <div>{flight.destination}</div>
-                <div>{flight.stops}</div>
-              </Box>
-              <Button
-                className="book_flight"
-                variant="contained"
-                color="primary"
-                onClick={() => handleBook(flight)}
+          <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+            {paginated.map((flight) => (
+              <li
+                key={flight.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: 16,
+                  marginBottom: 12,
+                  border: "1px solid #ddd",
+                  borderRadius: 4,
+                }}
               >
-                Rs. {flight.price.toLocaleString()}
-              </Button>
-            </Paper>
-          ))}
+                <Avatar>{flight.airline[0]}</Avatar>
+                <Box textAlign="center">
+                  <div>{flight.departureTime}</div>
+                  <div>{flight.source}</div>
+                </Box>
+                <Box textAlign="center">
+                  <div>{flight.airline}</div>
+                  <div>{flight.flightNumber}</div>
+                </Box>
+                <Box textAlign="center">
+                  <div>{flight.arrivalTime}</div>
+                  <div>{flight.destination}</div>
+                  <div>{flight.stops}</div>
+                </Box>
+                <Button
+                  className="book_flight"
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleBook(flight)}
+                >
+                  Rs. {flight.price.toLocaleString()}
+                </Button>
+              </li>
+            ))}
+          </ul>
           <TablePagination
             component="div"
             count={searchResults.length}
