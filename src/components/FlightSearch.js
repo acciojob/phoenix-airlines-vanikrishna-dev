@@ -119,12 +119,7 @@ function FlightSearch() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searched, setSearched] = useState(false);
 
-  const isFormValid =
-    source &&
-    destination &&
-    date &&
-    source !== destination &&
-    (tripType !== "roundtrip" || returnDate);
+  const isFormValid = source && destination && source !== destination;
 
   const handleSearch = () => {
     if (!isFormValid) return;
